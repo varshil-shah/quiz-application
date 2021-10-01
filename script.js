@@ -104,14 +104,19 @@ async function fetchQuiz() {
   const id = randomNumber(selectedCategories);
   const { currentQuestion, timer, levels } = questionData;
   const index = Math.floor(currentQuestion / 5);
-  const url = `https://opentdb.com/api.php?amount=15&category=${+id}&difficulty=${
-    levels[index]
-  }&type=multiple`;
-  timeLeft.textContent = timer[index];
+  let errorOffset = 0;
 
-  const response = await fetch(url);
-  const data = await response.json();
-  console.log(data, url);
+  let data;
+  do {
+    const url = `https://opentdb.com/api.php?amount=15&category=${id}&difficulty=${
+      levels[index + errorOffset]
+    }&type=multiple`;
+    const response = await fetch(url);
+    data = await response.json();
+    ++errorOffset;
+  } while (data.response_code);
+
+  timeLeft.textContent = timer[index];
   quizContainer.style.display = "block";
   availableCategories.style.display = "none";
   nextButton.style.display = "none";
@@ -168,25 +173,30 @@ const setDynamicQuestions = (data) => {
 const handleSelectOption = function (e) {
   e.preventDefault();
   const click = e.target.closest(".option");
-  const result = click.dataset.value === questionData.answer;
-  const icons = document.querySelectorAll(".icon");
-  icons.forEach((ele) => {
-    console.log(ele.parent);
-  });
+
+  // set icon function:
+  const setIconAndClass = function (element, className, fontAwesomeClass) {
+    element.children[1].classList.add(className);
+    element.classList.add(className);
+    element.children[1].children[0].classList.add(fontAwesomeClass);
+  };
+
   nextButton.style.display = "none";
   if (click) {
     const options = Array.from(optionsList.children);
-    if (result) {
-      click.classList.add("correct");
+    click.children[1].style.display = "block";
+    if (click.dataset.value === questionData.answer) {
+      setIconAndClass(click, "correct", "fa-check");
       questionData.correctAnswers++;
     } else {
-      click.classList.add("incorrect");
-      options
-        .find((ele) => ele.dataset.value === questionData.answer)
-        .classList.add("correct");
+      setIconAndClass(click, "incorrect", "fa-times");
+      const correctElement = options.find(
+        (ele) => ele.dataset.value === questionData.answer
+      );
+      correctElement.children[1].style.display = "block";
+      setIconAndClass(correctElement, "correct", "fa-check");
       console.log(`Incorrect answer`);
     }
-    console.log(e);
     nextButton.style.display = "block";
     options.forEach((ele) => ele.classList.add("disabled"));
     optionsList.classList.add("disabled");

@@ -334,15 +334,15 @@ ul .tag.tag_selected {
   display: none;
 }
 
-.option_list .option .icon.tick {
+.option_list .option .icon.correct {
   border-color: #23903c;
   color: #23903c !important;
   background: #fff;
 }
 
-.option_list .option .icon.cross {
+.option_list .option .icon.incorrect {
   border-color: #a42834;
-  color: #a42834;
+  color: #a42834 !important;
   background: #fff;
 }
 
