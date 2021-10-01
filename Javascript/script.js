@@ -22,7 +22,7 @@ const quizQuestion = document.querySelector("#quizQuestion");
 const resultContainer = document.querySelector(".result_box");
 const resultScore = document.querySelector("#resultScore");
 const resultQuestions = document.querySelector("#resultQuestions");
-const resultBoxReplay = document.querySelector("#resultBoxReplay");
+// const resultBoxReplay = document.querySelector("#resultBoxReplay");
 const resultBoxQuit = document.querySelector("#resultBoxQuit");
 
 // Footer section-
@@ -73,6 +73,7 @@ const startTimer = function (time) {
         correctElement.classList.add("correct");
         correctElement.children[1].children[0].classList.add("fa-check");
         nextButton.style.display = "block";
+        optionsList.classList.add("disabled");
       }
     }
     --currentTime;
@@ -287,5 +288,5 @@ informationBoxContinue.addEventListener("click", displayAvailableCategories);
 categoryProceedButton.addEventListener("click", fetchQuiz);
 nextButton.addEventListener("click", fetchQuiz);
 optionsList.addEventListener("click", handleSelectOption);
-resultBoxReplay.addEventListener("click", replayQuiz);
+// resultBoxReplay.addEventListener("click", replayQuiz);
 resultBoxQuit.addEventListener("click", reloadPage);
