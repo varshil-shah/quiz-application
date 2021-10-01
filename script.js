@@ -13,14 +13,19 @@ const selectedCategories = [];
 // Quiz container-
 const question = document.querySelector(".que_text");
 const optionsList = document.querySelector(".option_list");
-const optionsArray = document.querySelectorAll(".option");
-console.log(optionsArray);
+const timeLeft = document.querySelector(".timer_sec");
+const nextButton = document.querySelector(".next_btn");
 
-const currQuestionData = {
+// Footer section-
+const footerCurrentQuestion = document.querySelector("#footerCurrentQuestion");
+
+const questionData = {
   currentQuestion: 0,
   questionLimit: 15,
   timer: [30, 45, 60],
+  correctAnswers: 0,
   levels: ["easy", "medium", "hard"],
+  answer: "",
 };
 
 let remainingCategories = document.querySelector("#remainingCategories");
@@ -28,6 +33,7 @@ let remainingCategories = document.querySelector("#remainingCategories");
 // Init
 categoryProceedButton.disabled = true;
 categoryProceedButton.style.backgroundColor = "#e1e1e1";
+footerCurrentQuestion.textContent = questionData.currentQuestion;
 
 /*
   randomNumber function generates a random number,
@@ -50,7 +56,9 @@ const setCategories = function (data) {
   let htmlCode = "";
   data.trivia_categories.forEach((_, i) => {
     const { id, name } = data.trivia_categories[i];
-    htmlCode += `<li data-category-id="${id}" class="tag">${name}</li>`;
+    if (![13, 16, 19, 25, 30].includes(id)) {
+      htmlCode += `<li data-category-id="${id}" class="tag">${name}</li>`;
+    }
   });
   displayCatogories.insertAdjacentHTML("afterbegin", htmlCode);
 };
@@ -60,15 +68,6 @@ const handleCategories = function (e) {
   const currentCategory = e.target;
   const categoryId = currentCategory.dataset.categoryId;
 
-  /* 
-    IF CONDITON-
-    If the user clicks the category which is already been selected, then it will deselect the 
-    category also will remove the category id from the array.
-
-    ELSE-IF CONDITION-
-    If the user click on the category and if the length of the array is less than 5 than the
-    category id will be added in the array also the backgroundColor  will be changed
-  */
   if (currentCategory.classList.contains("tag_selected")) {
     currentCategory.classList.remove("tag_selected");
     selectedCategories.pop(categoryId);
@@ -79,22 +78,22 @@ const handleCategories = function (e) {
     }
   }
 
-  /*
-    If any of the category is selected the proceed button will be activated, else it will be 
-    disabled
-  */
-  if (selectedCategories.length > 0) {
-    categoryProceedButton.disabled = false;
-    categoryProceedButton.style.backgroundColor = "crimson";
-  } else {
-    categoryProceedButton.disabled = true;
-    categoryProceedButton.style.backgroundColor = "#e2e2e2";
-  }
-
-  remainingCategories.textContent = 5 - selectedCategories.length;
+  const noOfSelectedCategories = selectedCategories.length;
+  categoryProceedButton.disabled = !noOfSelectedCategories;
+  categoryProceedButton.style.backgroundColor = noOfSelectedCategories
+    ? "crimson"
+    : "#e2e2e2";
+  console.log(!!noOfSelectedCategories);
+  remainingCategories.textContent = 5 - noOfSelectedCategories;
 };
 
 const reloadPage = () => location.reload();
+
+const decodeHtmlCharacter = (str) => {
+  let ele = document.createElement("textarea");
+  ele.innerHTML = str;
+  return ele.value;
+};
 
 const displayInfoPage = () => {
   informationPage.style.display = "block";
@@ -102,46 +101,96 @@ const displayInfoPage = () => {
 };
 
 async function fetchQuiz() {
-  const randomCategoryId = randomNumber(selectedCategories);
-  const response = await fetch(
-    `https://opentdb.com/api.php?amount=15&category=${randomCategoryId}&difficulty=medium&type=multiple`
-  );
-  console.log(selectedCategories.length, randomCategoryId);
+  const id = randomNumber(selectedCategories);
+  const { currentQuestion, timer, levels } = questionData;
+  const index = Math.floor(currentQuestion / 5);
+  const url = `https://opentdb.com/api.php?amount=15&category=${+id}&difficulty=${
+    levels[index]
+  }&type=multiple`;
+  timeLeft.textContent = timer[index];
+
+  const response = await fetch(url);
   const data = await response.json();
+  console.log(data, url);
   quizContainer.style.display = "block";
-  informationPage.style.display = "none";
+  availableCategories.style.display = "none";
+  nextButton.style.display = "none";
+  optionsList.classList.remove("disabled");
   setDynamicQuestions(data);
 }
 
-/*
-  Shuffle array will shuffle elements from an array,
-  For example: [1,2,3,4,5], array.length = 5,
-  j will have a random number between 0 - 4,
-  If any number repeats, it's index will be changed again,
-*/
 const shuffleArray = (array, element) => {
   array.push(element);
+  questionData.answer = decodeHtmlCharacter(element);
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    console.log(`j: ${j} | i: ${i}`);
-    const temp = array[i];
-    array[i] = array[j];
-    array[j] = temp;
+    [array[i], array[j]] = [array[j], array[i]];
   }
   return array;
 };
 
 // Set dynamic questions-
 const setDynamicQuestions = (data) => {
-  const newQuestion = data.results[0].question;
-  question.innerHTML = `<span>${newQuestion}</span>`;
-  const availableOptions = shuffleArray(
-    data.results[0].incorrect_answers,
-    data.results[0].correct_answer
-  );
-  optionsArray.forEach((element, i) => {
-    element.innerHTML = `<span>${availableOptions[i]}</span>`;
+  if (questionData.currentQuestion < 15) {
+    optionsList.innerHTML = "";
+    const currentObject = data.results[questionData.currentQuestion];
+    console.log(data);
+    const newQuestion = currentObject.question;
+    console.log(newQuestion);
+    question.innerHTML = `<span>${
+      questionData.currentQuestion + 1
+    }. ${newQuestion}</span>`;
+    const availableOptions = shuffleArray(
+      currentObject.incorrect_answers,
+      currentObject.correct_answer
+    );
+
+    // IMPLEMENT : try to use data-set
+    // <div class="icon"><i class="fas"></i></div>
+    let htmlCode = "";
+    availableOptions.forEach((ele) => {
+      // Bad practice: DEBUG
+      htmlCode += `
+      <div class="option" data-value="${decodeHtmlCharacter(ele)}">
+        <span>${ele}</span>
+        <div class="icon"><i class="fas"></i></div>
+      </div>`;
+    });
+    optionsList.insertAdjacentHTML("afterbegin", htmlCode);
+    questionData.currentQuestion++;
+    footerCurrentQuestion.textContent = questionData.currentQuestion;
+  } else {
+    console.log(`Quiz completed`);
+  }
+};
+
+// handle option selection
+const handleSelectOption = function (e) {
+  e.preventDefault();
+  const click = e.target.closest(".option");
+  const result = click.dataset.value === questionData.answer;
+  const icons = document.querySelectorAll(".icon");
+  icons.forEach((ele) => {
+    console.log(ele.parent);
   });
+  nextButton.style.display = "none";
+  if (click) {
+    const options = Array.from(optionsList.children);
+    if (result) {
+      click.classList.add("correct");
+      questionData.correctAnswers++;
+    } else {
+      click.classList.add("incorrect");
+      options
+        .find((ele) => ele.dataset.value === questionData.answer)
+        .classList.add("correct");
+      console.log(`Incorrect answer`);
+    }
+    console.log(e);
+    nextButton.style.display = "block";
+    options.forEach((ele) => ele.classList.add("disabled"));
+    optionsList.classList.add("disabled");
+  }
 };
 
 // Event handlers
@@ -150,3 +199,6 @@ displayCatogories.addEventListener("click", handleCategories);
 informationBoxExit.addEventListener("click", reloadPage);
 informationBoxContinue.addEventListener("click", displayAvailableCategories);
 categoryProceedButton.addEventListener("click", fetchQuiz);
+nextButton.addEventListener("click", fetchQuiz);
+
+optionsList.addEventListener("click", handleSelectOption);
