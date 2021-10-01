@@ -13,8 +13,9 @@ const selectedCategories = [];
 // Quiz container-
 const question = document.querySelector(".que_text");
 const optionsList = document.querySelector(".option_list");
-const timeLeft = document.querySelector(".timer_sec");
+const showTime = document.querySelector(".timer_sec");
 const nextButton = document.querySelector(".next_btn");
+const timeLine = document.querySelector(".time_line");
 
 // Footer section-
 const footerCurrentQuestion = document.querySelector("#footerCurrentQuestion");
@@ -29,6 +30,9 @@ const questionData = {
 };
 
 let remainingCategories = document.querySelector("#remainingCategories");
+let counter, interval;
+let counterLine, currentTime;
+let optionClicked = false;
 
 // Init
 categoryProceedButton.disabled = true;
@@ -41,6 +45,43 @@ footerCurrentQuestion.textContent = questionData.currentQuestion;
 */
 const randomNumber = (array) => {
   return array[Math.floor(Math.random() * array.length)];
+};
+
+const startTimer = function (time) {
+  currentTime = time;
+  function timer() {
+    showTime.textContent = String(currentTime).padStart(2, 0);
+    if (currentTime === 0) {
+      clearInterval(counter);
+      if (!optionClicked) {
+        const options = Array.from(optionsList.children);
+        const correctElement = options.find(
+          (ele) => ele.dataset.value === questionData.answer
+        );
+        // REFACTOR
+        correctElement.children[1].classList.add("correct");
+        correctElement.classList.add("correct");
+        correctElement.children[1].children[0].classList.add("fa-check");
+        nextButton.style.display = "block";
+      }
+    }
+    --currentTime;
+  }
+  timer();
+  counter = setInterval(timer, 1000);
+};
+
+const startTimeLine = function (time) {
+  interval = setInterval(function () {
+    let offset = time - currentTime;
+    console.log(Math.floor((100 * offset) / time));
+    const percentage = Math.floor((100 * offset) / time);
+    if (percentage >= 100) {
+      clearInterval(interval);
+      console.log(`Time line completed`);
+    }
+    timeLine.style.width = `${percentage}%`;
+  }, 1000);
 };
 
 const categoriesUrl = "https://opentdb.com/api_category.php";
@@ -83,7 +124,6 @@ const handleCategories = function (e) {
   categoryProceedButton.style.backgroundColor = noOfSelectedCategories
     ? "crimson"
     : "#e2e2e2";
-  console.log(!!noOfSelectedCategories);
   remainingCategories.textContent = 5 - noOfSelectedCategories;
 };
 
@@ -116,17 +156,21 @@ async function fetchQuiz() {
     ++errorOffset;
   } while (data.response_code);
 
-  timeLeft.textContent = timer[index];
+  showTime.textContent = timer[index];
   quizContainer.style.display = "block";
   availableCategories.style.display = "none";
   nextButton.style.display = "none";
   optionsList.classList.remove("disabled");
+  clearInterval(counter);
+  startTimer(timer[index]);
+  clearInterval(interval);
+  startTimeLine(timer[index]);
   setDynamicQuestions(data);
 }
 
 const shuffleArray = (array, element) => {
   array.push(element);
-  questionData.answer = decodeHtmlCharacter(element);
+  questionData.answer = md5(decodeHtmlCharacter(element));
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [array[i], array[j]] = [array[j], array[i]];
@@ -139,9 +183,7 @@ const setDynamicQuestions = (data) => {
   if (questionData.currentQuestion < 15) {
     optionsList.innerHTML = "";
     const currentObject = data.results[questionData.currentQuestion];
-    console.log(data);
     const newQuestion = currentObject.question;
-    console.log(newQuestion);
     question.innerHTML = `<span>${
       questionData.currentQuestion + 1
     }. ${newQuestion}</span>`;
@@ -150,13 +192,11 @@ const setDynamicQuestions = (data) => {
       currentObject.correct_answer
     );
 
-    // IMPLEMENT : try to use data-set
-    // <div class="icon"><i class="fas"></i></div>
     let htmlCode = "";
     availableOptions.forEach((ele) => {
       // Bad practice: DEBUG
       htmlCode += `
-      <div class="option" data-value="${decodeHtmlCharacter(ele)}">
+      <div class="option" data-value="${md5(decodeHtmlCharacter(ele))}">
         <span>${ele}</span>
         <div class="icon"><i class="fas"></i></div>
       </div>`;
@@ -165,7 +205,6 @@ const setDynamicQuestions = (data) => {
     questionData.currentQuestion++;
     footerCurrentQuestion.textContent = questionData.currentQuestion;
   } else {
-    console.log(`Quiz completed`);
   }
 };
 
@@ -182,9 +221,13 @@ const handleSelectOption = function (e) {
   };
 
   nextButton.style.display = "none";
+  optionClicked = false;
   if (click) {
+    optionClicked = true;
     const options = Array.from(optionsList.children);
     click.children[1].style.display = "block";
+    clearInterval(interval);
+    clearInterval(counter);
     if (click.dataset.value === questionData.answer) {
       setIconAndClass(click, "correct", "fa-check");
       questionData.correctAnswers++;
@@ -195,7 +238,6 @@ const handleSelectOption = function (e) {
       );
       correctElement.children[1].style.display = "block";
       setIconAndClass(correctElement, "correct", "fa-check");
-      console.log(`Incorrect answer`);
     }
     nextButton.style.display = "block";
     options.forEach((ele) => ele.classList.add("disabled"));

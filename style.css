@@ -8,7 +8,7 @@
 }
 
 body {
-  background-color: crimson;
+  background: crimson;
 }
 
 .start_btn,
@@ -256,6 +256,14 @@ ul .tag.tag_selected {
   border: 1px solid #b8daff;
   border-radius: 5px;
   padding: 0 8px;
+}
+
+.quiz_box header .time_line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  background: crimson;
+  height: 3px;
 }
 
 .quiz_box header .timer .time_text {
