@@ -16,6 +16,14 @@ const optionsList = document.querySelector(".option_list");
 const showTime = document.querySelector(".timer_sec");
 const nextButton = document.querySelector(".next_btn");
 const timeLine = document.querySelector(".time_line");
+const quizQuestion = document.querySelector("#quizQuestion");
+
+// Result container-
+const resultContainer = document.querySelector(".result_box");
+const resultScore = document.querySelector("#resultScore");
+const resultQuestions = document.querySelector("#resultQuestions");
+const resultBoxReplay = document.querySelector("#resultBoxReplay");
+const resultBoxQuit = document.querySelector("#resultBoxQuit");
 
 // Footer section-
 const footerCurrentQuestion = document.querySelector("#footerCurrentQuestion");
@@ -38,6 +46,8 @@ let optionClicked = false;
 categoryProceedButton.disabled = true;
 categoryProceedButton.style.backgroundColor = "#e1e1e1";
 footerCurrentQuestion.textContent = questionData.currentQuestion;
+quizQuestion.textContent = questionData.questionLimit;
+resultContainer.classList.add("disabled");
 
 /*
   randomNumber function generates a random number,
@@ -140,32 +150,53 @@ const displayInfoPage = () => {
   startButton.style.display = "none";
 };
 
+const showResult = () => {
+  resultContainer.classList.remove("disabled");
+  quizContainer.style.display = "none";
+  document.querySelector("body").style.backgroundColor = "#fff";
+  resultScore.textContent = questionData.correctAnswers;
+  resultQuestions.textContent = questionData.questionLimit;
+  if (questionData.correctAnswers >= 5) {
+    confetti.start();
+    setTimeout(function () {
+      confetti.stop();
+    }, 10000);
+  }
+};
+
 async function fetchQuiz() {
-  const id = randomNumber(selectedCategories);
-  const { currentQuestion, timer, levels } = questionData;
-  const index = Math.floor(currentQuestion / 5);
-  let errorOffset = 0;
+  if (questionData.currentQuestion < questionData.questionLimit) {
+    const id = randomNumber(selectedCategories);
+    const { currentQuestion, timer, levels } = questionData;
+    const index = Math.floor(currentQuestion / 5);
+    let errorOffset = 0;
 
-  let data;
-  do {
-    const url = `https://opentdb.com/api.php?amount=15&category=${id}&difficulty=${
-      levels[index + errorOffset]
-    }&type=multiple`;
-    const response = await fetch(url);
-    data = await response.json();
-    ++errorOffset;
-  } while (data.response_code);
+    let data;
+    do {
+      const url = `https://opentdb.com/api.php?amount=15&category=${id}&difficulty=${
+        levels[index + errorOffset]
+      }&type=multiple`;
+      const response = await fetch(url);
+      data = await response.json();
+      ++errorOffset;
+    } while (data.response_code);
 
-  showTime.textContent = timer[index];
-  quizContainer.style.display = "block";
-  availableCategories.style.display = "none";
-  nextButton.style.display = "none";
-  optionsList.classList.remove("disabled");
-  clearInterval(counter);
-  startTimer(timer[index]);
-  clearInterval(interval);
-  startTimeLine(timer[index]);
-  setDynamicQuestions(data);
+    showTime.textContent = timer[index];
+    quizContainer.style.display = "block";
+    availableCategories.style.display = "none";
+    nextButton.style.display = "none";
+    optionClicked = false;
+    optionsList.classList.remove("disabled");
+    clearInterval(counter);
+    startTimer(timer[index]);
+    clearInterval(interval);
+    startTimeLine(timer[index]);
+    setDynamicQuestions(data);
+  } else {
+    clearInterval(counter);
+    clearInterval(interval);
+    showResult();
+  }
 }
 
 const shuffleArray = (array, element) => {
@@ -180,32 +211,29 @@ const shuffleArray = (array, element) => {
 
 // Set dynamic questions-
 const setDynamicQuestions = (data) => {
-  if (questionData.currentQuestion < 15) {
-    optionsList.innerHTML = "";
-    const currentObject = data.results[questionData.currentQuestion];
-    const newQuestion = currentObject.question;
-    question.innerHTML = `<span>${
-      questionData.currentQuestion + 1
-    }. ${newQuestion}</span>`;
-    const availableOptions = shuffleArray(
-      currentObject.incorrect_answers,
-      currentObject.correct_answer
-    );
+  optionsList.innerHTML = "";
+  const currentObject = data.results[questionData.currentQuestion];
+  const newQuestion = currentObject.question;
+  question.innerHTML = `<span>${
+    questionData.currentQuestion + 1
+  }. ${newQuestion}</span>`;
+  const availableOptions = shuffleArray(
+    currentObject.incorrect_answers,
+    currentObject.correct_answer
+  );
 
-    let htmlCode = "";
-    availableOptions.forEach((ele) => {
-      // Bad practice: DEBUG
-      htmlCode += `
+  let htmlCode = "";
+  availableOptions.forEach((ele) => {
+    // Bad practice: DEBUG
+    htmlCode += `
       <div class="option" data-value="${md5(decodeHtmlCharacter(ele))}">
         <span>${ele}</span>
         <div class="icon"><i class="fas"></i></div>
       </div>`;
-    });
-    optionsList.insertAdjacentHTML("afterbegin", htmlCode);
-    questionData.currentQuestion++;
-    footerCurrentQuestion.textContent = questionData.currentQuestion;
-  } else {
-  }
+  });
+  optionsList.insertAdjacentHTML("afterbegin", htmlCode);
+  questionData.currentQuestion++;
+  footerCurrentQuestion.textContent = questionData.currentQuestion;
 };
 
 // handle option selection
@@ -221,7 +249,6 @@ const handleSelectOption = function (e) {
   };
 
   nextButton.style.display = "none";
-  optionClicked = false;
   if (click) {
     optionClicked = true;
     const options = Array.from(optionsList.children);
@@ -245,6 +272,13 @@ const handleSelectOption = function (e) {
   }
 };
 
+const replayQuiz = () => {
+  confetti.stop();
+  resultContainer.classList.add("disabled");
+  availableCategories.style.display = "block";
+  document.querySelector("body").style.backgroundColor = "crimson";
+};
+
 // Event handlers
 startButton.addEventListener("click", displayInfoPage);
 displayCatogories.addEventListener("click", handleCategories);
@@ -252,5 +286,6 @@ informationBoxExit.addEventListener("click", reloadPage);
 informationBoxContinue.addEventListener("click", displayAvailableCategories);
 categoryProceedButton.addEventListener("click", fetchQuiz);
 nextButton.addEventListener("click", fetchQuiz);
-
 optionsList.addEventListener("click", handleSelectOption);
+resultBoxReplay.addEventListener("click", replayQuiz);
+resultBoxQuit.addEventListener("click", reloadPage);

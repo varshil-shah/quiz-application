@@ -96,6 +96,21 @@ body {
   transition: all 0.3s ease;
 }
 
+.info_box .develop_tag {
+  font-size: 18px;
+  font-weight: 500;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 10px 35px;
+}
+
+.info_box .develop_tag img {
+  height: 30px;
+  width: 40px;
+  margin: 0 15px;
+}
+
 .buttons button.quit {
   border-color: crimson;
   color: crimson;
@@ -406,7 +421,7 @@ footer .next_btn {
 
 /* Result box */
 .result_box {
-  background: #fff;
+  background: crimson;
   width: 450px;
   padding: 25px 30px;
   border-radius: 5px;
@@ -415,20 +430,23 @@ footer .next_btn {
   justify-content: space-between;
   align-items: center;
   text-align: center;
-  pointer-events: none;
   transform: translate(-50%, -50%) scale(1);
-  opacity: 0;
+}
+
+.result_box.disabled {
+  display: none;
 }
 
 .result_box .ico {
   font-size: 100px;
   margin-bottom: 10px;
-  color: crimson;
+  color: #fff;
 }
 
 .result_box .complete_text {
   font-size: 20px;
   font-weight: 500;
+  color: #fff;
 }
 
 .result_box .score_text span {
@@ -436,6 +454,7 @@ footer .next_btn {
   margin: 10px 0;
   font-size: 18px;
   font-weight: 500;
+  color: #fff;
 }
 
 .result_box span p {
@@ -461,16 +480,10 @@ footer .next_btn {
   border-radius: 5px;
 }
 
+.result_box .buttons button.restart,
 .result_box .buttons button.quit {
-  border-color: crimson;
   color: crimson;
-  background-color: transparent;
-}
-
-.result_box .buttons button.quit:hover {
-  border-color: crimson;
-  color: #fff;
-  background-color: crimson;
+  background-color: #fff;
 }
 
 /* Make the information section responsive */
