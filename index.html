@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css" />
     <link rel="stylesheet" href="./style.css">
+    <link rel="icon" type="image/png" href="assets/favicon.png" />
     <title>Quiz Application</title>
 </head>
 
@@ -27,7 +28,7 @@
             <div class="info">5. There will be <span>15</span> questions and they will be displayed according to
                 selected categories.</div>
         </div>
-        <p class="develop_tag">Developed in <img src="assets/indian-flag.png" alt="Indian flag"></p>
+        <p class="develop_tag">Developed in<img src="assets/indian-flag.png" alt="Indian flag"></p>
         <div class="buttons">
             <button class="quit" id="informationBoxExit">Exit Quiz</button>
             <button class="restart" id="informationBoxContinue">Continue</button>
@@ -57,10 +58,18 @@
     <!-- QUIZ BOX -->
     <div class="quiz_box">
         <header>
-            <div class="title">Quiz Application</div>
-            <div class="timer">
-                <div class="time_text">Time left</div>
-                <div class="timer_sec">15</div>
+            <div class="main">
+                <div class="title">Quiz</div>
+                <div class="right">
+                    <div class="highscore">
+                        <img src="assets/highscore.png" alt="highscore" class="quiz_icon">
+                        <div class="highscore_value">15</div>
+                    </div>
+                    <div class="timer">
+                        <img src="assets/clock.png" class="quiz_icon" alt="Clock">
+                        <div class="timer_sec">15</div>
+                    </div>
+                </div>
             </div>
             <div class="time_line"></div>
         </header>
@@ -86,9 +95,7 @@
 
     <!-- Result box -->
     <div class="result_box">
-        <div class="ico">
-            <i class="fas fa-crown"></i>
-        </div>
+        <img src="assets/trophy.png" alt="Trophy" class="trophy">
         <div class="complete_text">You've completed the Quiz!</div>
         <div class="score_text">
             <span>You have scored <p id="resultScore">2</p> out of <p id="resultQuestions">5</p></span>

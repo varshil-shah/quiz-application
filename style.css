@@ -78,12 +78,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding: 0 35px;
   border-top: 1px solid lightgrey;
 }
 
 .info_box .buttons button {
-  margin: 0 5px;
+  margin: 10px 5px;
   height: 40px;
   width: 100px;
   border: 1px solid transparent;
@@ -97,18 +96,18 @@ body {
 }
 
 .info_box .develop_tag {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 500;
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  padding: 10px 35px;
+  padding: 10px 0px;
 }
 
 .info_box .develop_tag img {
-  height: 30px;
-  width: 40px;
-  margin: 0 15px;
+  height: 25px;
+  width: 30px;
+  margin: 0 7px;
 }
 
 .buttons button.quit {
@@ -249,11 +248,21 @@ ul .tag.tag_selected {
   height: 70px;
   padding: 0 30px;
   background-color: #fff;
+  border-radius: 5px 5px 0 0;
+  box-shadow: 0 3px 5px 1px rgba(0, 0, 0, 0.1);
+}
+
+.quiz_box header .main {
+  height: 70px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-radius: 5px 5px 0 0;
-  box-shadow: 0 3px 5px 1px rgba(0, 0, 0, 0.1);
+}
+
+.quiz_box header .main .right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .quiz_box header .title {
@@ -261,16 +270,18 @@ ul .tag.tag_selected {
   font-weight: 600;
 }
 
+.quiz_box header .highscore,
 .quiz_box header .timer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 145px;
+  width: 120px;
   height: 45px;
   background: #cce5ff;
   border: 1px solid #b8daff;
   border-radius: 5px;
   padding: 0 8px;
+  margin: 0 10px;
 }
 
 .quiz_box header .time_line {
@@ -281,12 +292,18 @@ ul .tag.tag_selected {
   height: 3px;
 }
 
-.quiz_box header .timer .time_text {
+/* .quiz_box header .timer .time_text {
   font-weight: 400;
   font-size: 18px;
   user-select: none;
+} */
+
+.quiz_box header .quiz_icon {
+  height: 30px;
+  width: 30px;
 }
 
+.quiz_box header .highscore .highscore_value,
 .quiz_box header .timer .timer_sec {
   font-size: 18px;
   font-weight: 500;
@@ -437,10 +454,16 @@ footer .next_btn {
   display: none;
 }
 
-.result_box .ico {
+/* .result_box .ico {
   font-size: 100px;
   margin-bottom: 10px;
   color: #fff;
+} */
+
+.result_box .trophy {
+  height: 150px;
+  width: 150px;
+  margin-bottom: 15px;
 }
 
 .result_box .complete_text {
@@ -518,22 +541,19 @@ footer .next_btn {
   }
 
   .quiz_box header .title {
-    font-size: 17px;
+    font-size: 20px;
   }
 
-  .quiz_box header .timer .time_text,
+  .quiz_box header .highscore .highscore_value,
   .quiz_box header .timer .timer_sec {
     font-size: 15px;
   }
 
+  .quiz_box header .highscore,
   .quiz_box header .timer {
     padding: 0 4px;
-    width: 125px;
-    height: 35px;
-  }
-
-  .quiz_box section .que_text {
-    font-size: 18px;
+    width: 105px;
+    height: 40px;
   }
 
   .quiz_box section .option_list .option {

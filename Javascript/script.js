@@ -17,6 +17,7 @@ const showTime = document.querySelector(".timer_sec");
 const nextButton = document.querySelector(".next_btn");
 const timeLine = document.querySelector(".time_line");
 const quizQuestion = document.querySelector("#quizQuestion");
+const highScore = document.querySelector(".highscore_value");
 
 // Result container-
 const resultContainer = document.querySelector(".result_box");
@@ -28,6 +29,7 @@ const resultBoxQuit = document.querySelector("#resultBoxQuit");
 // Footer section-
 const footerCurrentQuestion = document.querySelector("#footerCurrentQuestion");
 
+// store users data-
 const questionData = {
   currentQuestion: 0,
   questionLimit: 15,
@@ -49,12 +51,29 @@ footerCurrentQuestion.textContent = questionData.currentQuestion;
 quizQuestion.textContent = questionData.questionLimit;
 resultContainer.classList.add("disabled");
 
-/*
-  randomNumber function generates a random number,
-  returns a random value from an array,
-*/
-const randomNumber = (array) => {
-  return array[Math.floor(Math.random() * array.length)];
+// returns a random number froma an array-
+const randomNumber = (array) => array[Math.floor(Math.random() * array.length)];
+
+// Set icon and className:
+const setIconAndClass = function (element, className, fontAwesomeClass) {
+  element.children[1].classList.add(className);
+  element.classList.add(className);
+  element.children[1].children[0].classList.add(fontAwesomeClass);
+};
+
+// use to store highscore-
+const setLocalStorage = function () {
+  const localStorageValue = localStorage.getItem("highscore");
+  if (localStorageValue) {
+    const noOfCorrectAns = questionData.correctAnswers;
+    if (noOfCorrectAns > localStorageValue) {
+      localStorage.setItem("highscore", noOfCorrectAns);
+    }
+    highScore.textContent = localStorageValue;
+  } else {
+    localStorage.setItem("highscore", "0");
+    highScore.textContent = 0;
+  }
 };
 
 const startTimer = function (time) {
@@ -68,10 +87,7 @@ const startTimer = function (time) {
         const correctElement = options.find(
           (ele) => ele.dataset.value === questionData.answer
         );
-        // REFACTOR
-        correctElement.children[1].classList.add("correct");
-        correctElement.classList.add("correct");
-        correctElement.children[1].children[0].classList.add("fa-check");
+        setIconAndClass(correctElement, "correct", "fa-check");
         nextButton.style.display = "block";
         optionsList.classList.add("disabled");
       }
@@ -85,19 +101,16 @@ const startTimer = function (time) {
 const startTimeLine = function (time) {
   interval = setInterval(function () {
     let offset = time - currentTime;
-    console.log(Math.floor((100 * offset) / time));
     const percentage = Math.floor((100 * offset) / time);
     if (percentage >= 100) {
       clearInterval(interval);
-      console.log(`Time line completed`);
     }
     timeLine.style.width = `${percentage}%`;
   }, 1000);
 };
 
-const categoriesUrl = "https://opentdb.com/api_category.php";
 async function displayAvailableCategories() {
-  const response = await fetch(categoriesUrl);
+  const response = await fetch(`https://opentdb.com/api_category.php`);
   const data = await response.json();
   availableCategories.style.display = "block";
   informationPage.style.display = "none";
@@ -115,6 +128,7 @@ const setCategories = function (data) {
   displayCatogories.insertAdjacentHTML("afterbegin", htmlCode);
 };
 
+// handle categories
 const handleCategories = function (e) {
   e.preventDefault();
   const currentCategory = e.target;
@@ -151,6 +165,7 @@ const displayInfoPage = () => {
   startButton.style.display = "none";
 };
 
+// whenever the quiz ends, show result to the user-
 const showResult = () => {
   resultContainer.classList.remove("disabled");
   quizContainer.style.display = "none";
@@ -165,6 +180,25 @@ const showResult = () => {
   }
 };
 
+const clearIntervals = () => {
+  clearInterval(counter);
+  clearInterval(interval);
+};
+
+// handle the quiz ui part-
+const handleQuizUI = function (timer) {
+  showTime.textContent = timer;
+  quizContainer.style.display = "block";
+  availableCategories.style.display = "none";
+  nextButton.style.display = "none";
+  optionClicked = false;
+  optionsList.classList.remove("disabled");
+  clearIntervals();
+  startTimer(timer);
+  startTimeLine(timer);
+};
+
+// fetch new question-
 async function fetchQuiz() {
   if (questionData.currentQuestion < questionData.questionLimit) {
     const id = randomNumber(selectedCategories);
@@ -182,24 +216,16 @@ async function fetchQuiz() {
       ++errorOffset;
     } while (data.response_code);
 
-    showTime.textContent = timer[index];
-    quizContainer.style.display = "block";
-    availableCategories.style.display = "none";
-    nextButton.style.display = "none";
-    optionClicked = false;
-    optionsList.classList.remove("disabled");
-    clearInterval(counter);
-    startTimer(timer[index]);
-    clearInterval(interval);
-    startTimeLine(timer[index]);
+    handleQuizUI(timer[index]);
     setDynamicQuestions(data);
   } else {
-    clearInterval(counter);
-    clearInterval(interval);
+    clearIntervals();
     showResult();
   }
+  setLocalStorage();
 }
 
+// Use to shuffle available options-
 const shuffleArray = (array, element) => {
   array.push(element);
   questionData.answer = md5(decodeHtmlCharacter(element));
@@ -242,13 +268,6 @@ const handleSelectOption = function (e) {
   e.preventDefault();
   const click = e.target.closest(".option");
 
-  // set icon function:
-  const setIconAndClass = function (element, className, fontAwesomeClass) {
-    element.children[1].classList.add(className);
-    element.classList.add(className);
-    element.children[1].children[0].classList.add(fontAwesomeClass);
-  };
-
   nextButton.style.display = "none";
   if (click) {
     optionClicked = true;
@@ -273,13 +292,6 @@ const handleSelectOption = function (e) {
   }
 };
 
-const replayQuiz = () => {
-  confetti.stop();
-  resultContainer.classList.add("disabled");
-  availableCategories.style.display = "block";
-  document.querySelector("body").style.backgroundColor = "crimson";
-};
-
 // Event handlers
 startButton.addEventListener("click", displayInfoPage);
 displayCatogories.addEventListener("click", handleCategories);
@@ -288,5 +300,4 @@ informationBoxContinue.addEventListener("click", displayAvailableCategories);
 categoryProceedButton.addEventListener("click", fetchQuiz);
 nextButton.addEventListener("click", fetchQuiz);
 optionsList.addEventListener("click", handleSelectOption);
-// resultBoxReplay.addEventListener("click", replayQuiz);
 resultBoxQuit.addEventListener("click", reloadPage);
