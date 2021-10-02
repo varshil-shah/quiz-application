@@ -9,6 +9,7 @@ const informationBoxContinue = document.querySelector(
 );
 const informationPage = document.querySelector(".info_box");
 const selectedCategories = [];
+const randNumber = [];
 
 // Quiz container-
 const question = document.querySelector(".que_text");
@@ -39,6 +40,8 @@ const questionData = {
   answer: "",
 };
 
+let fetchedQuestions = [];
+
 let remainingCategories = document.querySelector("#remainingCategories");
 let counter, interval;
 let counterLine, currentTime;
@@ -50,9 +53,6 @@ categoryProceedButton.style.backgroundColor = "#e1e1e1";
 footerCurrentQuestion.textContent = questionData.currentQuestion;
 quizQuestion.textContent = questionData.questionLimit;
 resultContainer.classList.add("disabled");
-
-// returns a random number froma an array-
-const randomNumber = (array) => array[Math.floor(Math.random() * array.length)];
 
 // Set icon and className:
 const setIconAndClass = function (element, className, fontAwesomeClass) {
@@ -109,6 +109,15 @@ const startTimeLine = function (time) {
   }, 1000);
 };
 
+// Use to shuffle available options-
+const shuffleArray = (array) => {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+};
+
 async function displayAvailableCategories() {
   const response = await fetch(`https://opentdb.com/api_category.php`);
   const data = await response.json();
@@ -121,9 +130,7 @@ const setCategories = function (data) {
   let htmlCode = "";
   data.trivia_categories.forEach((_, i) => {
     const { id, name } = data.trivia_categories[i];
-    if (![13, 16, 19, 25, 30].includes(id)) {
-      htmlCode += `<li data-category-id="${id}" class="tag">${name}</li>`;
-    }
+    htmlCode += `<li data-category-id="${id}" class="tag">${name}</li>`;
   });
   displayCatogories.insertAdjacentHTML("afterbegin", htmlCode);
 };
@@ -199,62 +206,71 @@ const handleQuizUI = function (timer) {
 };
 
 // fetch new question-
-async function fetchQuiz() {
+const fetchQuiz = async () => {
+  const { currentQuestion, timer, levels } = questionData;
+  const difficultyIndex = Math.floor(currentQuestion / 5);
+  if (
+    questionData.currentQuestion < questionData.questionLimit &&
+    Math.floor(currentQuestion) % 5 === 0
+  ) {
+    fetchedQuestions = [];
+    const questionsToFetch = Math.ceil(5 / selectedCategories.length);
+    const url = `https://opentdb.com/api.php?amount=${questionsToFetch}&category=CATEGORY_ID&difficulty=DIFFICULTY&type=multiple`;
+    for (let category of selectedCategories) {
+      let errorOffset = 0;
+      let isDataFound = true;
+      do {
+        const response = await fetch(
+          url
+            .replace("CATEGORY_ID", category)
+            .replace("DIFFICULTY", levels[difficultyIndex + errorOffset])
+        );
+        const data = await response.json();
+        if (data.response_code > 0) {
+          isDataFound = false;
+          ++errorOffset;
+          return;
+        }
+        fetchedQuestions.push(...data.results);
+        isDataFound = true;
+      } while (!isDataFound);
+    }
+
+    fetchedQuestions = shuffleArray(fetchedQuestions);
+  }
+
   if (questionData.currentQuestion < questionData.questionLimit) {
-    const id = randomNumber(selectedCategories);
-    const { currentQuestion, timer, levels } = questionData;
-    const index = Math.floor(currentQuestion / 5);
-    let errorOffset = 0;
-
-    let data;
-    do {
-      const url = `https://opentdb.com/api.php?amount=15&category=${id}&difficulty=${
-        levels[index + errorOffset]
-      }&type=multiple`;
-      const response = await fetch(url);
-      data = await response.json();
-      ++errorOffset;
-    } while (data.response_code);
-
-    handleQuizUI(timer[index]);
-    setDynamicQuestions(data);
+    handleQuizUI(timer[difficultyIndex]);
+    setQuestion(fetchedQuestions[questionData.currentQuestion % 5]);
   } else {
     clearIntervals();
     showResult();
   }
   setLocalStorage();
-}
-
-// Use to shuffle available options-
-const shuffleArray = (array, element) => {
-  array.push(element);
-  questionData.answer = md5(decodeHtmlCharacter(element));
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
 };
 
 // Set dynamic questions-
-const setDynamicQuestions = (data) => {
+const setQuestion = (currentQuestion) => {
   optionsList.innerHTML = "";
-  const currentObject = data.results[questionData.currentQuestion];
-  const newQuestion = currentObject.question;
+  const newQuestion = currentQuestion.question;
   question.innerHTML = `<span>${
     questionData.currentQuestion + 1
   }. ${newQuestion}</span>`;
-  const availableOptions = shuffleArray(
-    currentObject.incorrect_answers,
-    currentObject.correct_answer
+
+  questionData.answer = md5(
+    decodeHtmlCharacter(currentQuestion.correct_answer)
   );
 
+  const availableOptions = shuffleArray([
+    ...currentQuestion.incorrect_answers,
+    currentQuestion.correct_answer,
+  ]);
+
   let htmlCode = "";
-  availableOptions.forEach((ele) => {
-    // Bad practice: DEBUG
+  availableOptions.forEach((option) => {
     htmlCode += `
-      <div class="option" data-value="${md5(decodeHtmlCharacter(ele))}">
-        <span>${ele}</span>
+      <div class="option" data-value="${md5(decodeHtmlCharacter(option))}">
+        <span>${option}</span>
         <div class="icon"><i class="fas"></i></div>
       </div>`;
   });
@@ -278,6 +294,9 @@ const handleSelectOption = function (e) {
     if (click.dataset.value === questionData.answer) {
       setIconAndClass(click, "correct", "fa-check");
       questionData.correctAnswers++;
+      if (questionData.correctAnswers % 5 === 0) {
+        randNumber.length = 0;
+      }
     } else {
       setIconAndClass(click, "incorrect", "fa-times");
       const correctElement = options.find(
@@ -292,7 +311,7 @@ const handleSelectOption = function (e) {
   }
 };
 
-// Event handlers
+// Event handlers-
 startButton.addEventListener("click", displayInfoPage);
 displayCatogories.addEventListener("click", handleCategories);
 informationBoxExit.addEventListener("click", reloadPage);
