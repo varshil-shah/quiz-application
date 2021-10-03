@@ -1,37 +1,37 @@
 const startButton = document.querySelector(".start_btn");
-const availableCategories = document.querySelector(".wrapper");
+const infoExit = document.querySelector("#informationBoxExit");
+const quizContainer = document.querySelector(".quiz_box");
+const infoContinue = document.querySelector("#informationBoxContinue");
+const infoContainer = document.querySelector(".info_box");
+
+// Categories section-
+const categoriesContainer = document.querySelector(".wrapper");
 const displayCatogories = document.querySelector("#available_tags");
 const categoryProceedButton = document.querySelector(".proceed");
-const informationBoxExit = document.querySelector("#informationBoxExit");
-const quizContainer = document.querySelector(".quiz_box");
-const informationBoxContinue = document.querySelector(
-  "#informationBoxContinue"
-);
-const informationPage = document.querySelector(".info_box");
-const selectedCategories = [];
-const randNumber = [];
+const categoryClearButton = document.querySelector(".clear");
 
-// Quiz container-
+const selectedCategories = [];
+
+// Quiz section-
 const question = document.querySelector(".que_text");
 const optionsList = document.querySelector(".option_list");
 const showTime = document.querySelector(".timer_sec");
 const nextButton = document.querySelector(".next_btn");
 const timeLine = document.querySelector(".time_line");
-const quizQuestion = document.querySelector("#quizQuestion");
+const quizMaxQuestions = document.querySelector("#quizQuestion");
 const highScore = document.querySelector(".highscore_value");
 
-// Result container-
+// Result section-
 const resultContainer = document.querySelector(".result_box");
 const resultScore = document.querySelector("#resultScore");
-const resultQuestions = document.querySelector("#resultQuestions");
-// const resultBoxReplay = document.querySelector("#resultBoxReplay");
-const resultBoxQuit = document.querySelector("#resultBoxQuit");
+const resultMaxQuestions = document.querySelector("#resultQuestions");
+const resultQuitButton = document.querySelector("#resultBoxQuit");
 
 // Footer section-
 const footerCurrentQuestion = document.querySelector("#footerCurrentQuestion");
 
 // store users data-
-const questionData = {
+const userData = {
   currentQuestion: 0,
   questionLimit: 15,
   timer: [30, 45, 60],
@@ -48,11 +48,18 @@ let counterLine, currentTime;
 let optionClicked = false;
 
 // Init
-categoryProceedButton.disabled = true;
-categoryProceedButton.style.backgroundColor = "#e1e1e1";
-footerCurrentQuestion.textContent = questionData.currentQuestion;
-quizQuestion.textContent = questionData.questionLimit;
 resultContainer.classList.add("disabled");
+categoryProceedButton.disabled = categoryClearButton.disabled = true;
+categoryProceedButton.style.backgroundColor =
+  categoryClearButton.style.backgroundColor = "#e1e1e1";
+footerCurrentQuestion.textContent = userData.currentQuestion;
+quizMaxQuestions.textContent = userData.questionLimit;
+
+(() => {
+  const localStorageCat = localStorage.getItem("categories");
+  if (localStorageCat) selectedCategories.push(...JSON.parse(localStorageCat));
+  remainingCategories.textContent = 5 - selectedCategories.length;
+})();
 
 // Set icon and className:
 const setIconAndClass = function (element, className, fontAwesomeClass) {
@@ -61,19 +68,59 @@ const setIconAndClass = function (element, className, fontAwesomeClass) {
   element.children[1].children[0].classList.add(fontAwesomeClass);
 };
 
+// return md5 string-
+const encryptString = (string) => md5(decodeHtmlCharacter(string));
+
 // use to store highscore-
-const setLocalStorage = function () {
+const localStorageHighScore = function () {
   const localStorageValue = localStorage.getItem("highscore");
   if (localStorageValue) {
-    const noOfCorrectAns = questionData.correctAnswers;
+    const noOfCorrectAns = userData.correctAnswers;
     if (noOfCorrectAns > localStorageValue) {
       localStorage.setItem("highscore", noOfCorrectAns);
     }
     highScore.textContent = localStorageValue;
   } else {
-    localStorage.setItem("highscore", "0");
+    localStorage.setItem("highscore", 0);
     highScore.textContent = 0;
   }
+};
+
+// use to store categories-
+const localStorageCategories = function () {
+  const localStorageValue = localStorage.getItem("categories");
+  if (localStorageValue) {
+    const newArray = [...selectedCategories, ...JSON.parse(localStorageValue)];
+    localStorage.setItem("categories", JSON.stringify([...new Set(newArray)]));
+  } else {
+    localStorage.setItem(
+      "categories",
+      JSON.stringify([...new Set(selectedCategories)])
+    );
+  }
+};
+
+// category clear and proceed button-
+const clearProceedButton = function () {
+  const noOfSelectedCategories = selectedCategories.length;
+  categoryProceedButton.disabled = categoryClearButton.disabled =
+    !noOfSelectedCategories;
+  categoryProceedButton.style.backgroundColor =
+    categoryClearButton.style.backgroundColor = noOfSelectedCategories
+      ? "crimson"
+      : "#e2e2e2";
+  remainingCategories.textContent = 5 - noOfSelectedCategories;
+};
+
+// check categories from localStorage-
+const setLocalStorageCategories = () => {
+  const tags = Array.from(document.querySelectorAll(".tag"));
+  tags.forEach((tag) => {
+    if (selectedCategories.includes(tag.dataset.categoryId)) {
+      tag.classList.add("tag_selected");
+    }
+  });
+  clearProceedButton();
 };
 
 const startTimer = function (time) {
@@ -85,7 +132,7 @@ const startTimer = function (time) {
       if (!optionClicked) {
         const options = Array.from(optionsList.children);
         const correctElement = options.find(
-          (ele) => ele.dataset.value === questionData.answer
+          (ele) => encryptString(ele.dataset.value) === userData.answer
         );
         setIconAndClass(correctElement, "correct", "fa-check");
         nextButton.style.display = "block";
@@ -118,12 +165,14 @@ const shuffleArray = (array) => {
   return array;
 };
 
+// ERROR:
 async function displayAvailableCategories() {
   const response = await fetch(`https://opentdb.com/api_category.php`);
   const data = await response.json();
-  availableCategories.style.display = "block";
-  informationPage.style.display = "none";
+  categoriesContainer.style.display = "block";
+  infoContainer.style.display = "none";
   setCategories(data);
+  setLocalStorageCategories();
 }
 
 const setCategories = function (data) {
@@ -139,6 +188,8 @@ const setCategories = function (data) {
 const handleCategories = function (e) {
   e.preventDefault();
   const currentCategory = e.target;
+  if (!currentCategory.classList.contains("tag")) return;
+
   const categoryId = currentCategory.dataset.categoryId;
 
   if (currentCategory.classList.contains("tag_selected")) {
@@ -150,13 +201,7 @@ const handleCategories = function (e) {
       selectedCategories.push(categoryId);
     }
   }
-
-  const noOfSelectedCategories = selectedCategories.length;
-  categoryProceedButton.disabled = !noOfSelectedCategories;
-  categoryProceedButton.style.backgroundColor = noOfSelectedCategories
-    ? "crimson"
-    : "#e2e2e2";
-  remainingCategories.textContent = 5 - noOfSelectedCategories;
+  clearProceedButton();
 };
 
 const reloadPage = () => location.reload();
@@ -168,7 +213,7 @@ const decodeHtmlCharacter = (str) => {
 };
 
 const displayInfoPage = () => {
-  informationPage.style.display = "block";
+  infoContainer.style.display = "block";
   startButton.style.display = "none";
 };
 
@@ -177,9 +222,9 @@ const showResult = () => {
   resultContainer.classList.remove("disabled");
   quizContainer.style.display = "none";
   document.querySelector("body").style.backgroundColor = "#fff";
-  resultScore.textContent = questionData.correctAnswers;
-  resultQuestions.textContent = questionData.questionLimit;
-  if (questionData.correctAnswers >= 5) {
+  resultScore.textContent = userData.correctAnswers;
+  resultMaxQuestions.textContent = userData.questionLimit;
+  if (userData.correctAnswers >= 5) {
     confetti.start();
     setTimeout(function () {
       confetti.stop();
@@ -194,9 +239,9 @@ const clearIntervals = () => {
 
 // handle the quiz ui part-
 const handleQuizUI = function (timer) {
-  showTime.textContent = timer;
+  // showTime.textContent = timer;
   quizContainer.style.display = "block";
-  availableCategories.style.display = "none";
+  categoriesContainer.style.display = "none";
   nextButton.style.display = "none";
   optionClicked = false;
   optionsList.classList.remove("disabled");
@@ -207,13 +252,14 @@ const handleQuizUI = function (timer) {
 
 // fetch new question-
 const fetchQuiz = async () => {
-  const { currentQuestion, timer, levels } = questionData;
+  const { currentQuestion, timer, levels } = userData;
+  if (currentQuestion <= 0) localStorageCategories();
   const difficultyIndex = Math.floor(currentQuestion / 5);
   if (
-    questionData.currentQuestion < questionData.questionLimit &&
+    userData.currentQuestion < userData.questionLimit &&
     Math.floor(currentQuestion) % 5 === 0
   ) {
-    fetchedQuestions = [];
+    fetchedQuestions.length = 0;
     const questionsToFetch = Math.ceil(5 / selectedCategories.length);
     const url = `https://opentdb.com/api.php?amount=${questionsToFetch}&category=CATEGORY_ID&difficulty=DIFFICULTY&type=multiple`;
     for (let category of selectedCategories) {
@@ -239,14 +285,14 @@ const fetchQuiz = async () => {
     fetchedQuestions = shuffleArray(fetchedQuestions);
   }
 
-  if (questionData.currentQuestion < questionData.questionLimit) {
+  if (userData.currentQuestion < userData.questionLimit) {
     handleQuizUI(timer[difficultyIndex]);
-    setQuestion(fetchedQuestions[questionData.currentQuestion % 5]);
+    setQuestion(fetchedQuestions[userData.currentQuestion % 5]);
   } else {
     clearIntervals();
     showResult();
   }
-  setLocalStorage();
+  localStorageHighScore();
 };
 
 // Set dynamic questions-
@@ -254,12 +300,10 @@ const setQuestion = (currentQuestion) => {
   optionsList.innerHTML = "";
   const newQuestion = currentQuestion.question;
   question.innerHTML = `<span>${
-    questionData.currentQuestion + 1
+    userData.currentQuestion + 1
   }. ${newQuestion}</span>`;
 
-  questionData.answer = md5(
-    decodeHtmlCharacter(currentQuestion.correct_answer)
-  );
+  userData.answer = encryptString(currentQuestion.correct_answer);
 
   const availableOptions = shuffleArray([
     ...currentQuestion.incorrect_answers,
@@ -269,14 +313,14 @@ const setQuestion = (currentQuestion) => {
   let htmlCode = "";
   availableOptions.forEach((option) => {
     htmlCode += `
-      <div class="option" data-value="${md5(decodeHtmlCharacter(option))}">
+      <div class="option" data-value="${option}">
         <span>${option}</span>
         <div class="icon"><i class="fas"></i></div>
       </div>`;
   });
   optionsList.insertAdjacentHTML("afterbegin", htmlCode);
-  questionData.currentQuestion++;
-  footerCurrentQuestion.textContent = questionData.currentQuestion;
+  userData.currentQuestion++;
+  footerCurrentQuestion.textContent = userData.currentQuestion;
 };
 
 // handle option selection
@@ -291,16 +335,13 @@ const handleSelectOption = function (e) {
     click.children[1].style.display = "block";
     clearInterval(interval);
     clearInterval(counter);
-    if (click.dataset.value === questionData.answer) {
+    if (encryptString(click.dataset.value) === userData.answer) {
       setIconAndClass(click, "correct", "fa-check");
-      questionData.correctAnswers++;
-      if (questionData.correctAnswers % 5 === 0) {
-        randNumber.length = 0;
-      }
+      userData.correctAnswers++;
     } else {
       setIconAndClass(click, "incorrect", "fa-times");
       const correctElement = options.find(
-        (ele) => ele.dataset.value === questionData.answer
+        (ele) => encryptString(ele.dataset.value) === userData.answer
       );
       correctElement.children[1].style.display = "block";
       setIconAndClass(correctElement, "correct", "fa-check");
@@ -314,9 +355,22 @@ const handleSelectOption = function (e) {
 // Event handlers-
 startButton.addEventListener("click", displayInfoPage);
 displayCatogories.addEventListener("click", handleCategories);
-informationBoxExit.addEventListener("click", reloadPage);
-informationBoxContinue.addEventListener("click", displayAvailableCategories);
+infoExit.addEventListener("click", reloadPage);
+infoContinue.addEventListener("click", displayAvailableCategories);
 categoryProceedButton.addEventListener("click", fetchQuiz);
 nextButton.addEventListener("click", fetchQuiz);
 optionsList.addEventListener("click", handleSelectOption);
-resultBoxQuit.addEventListener("click", reloadPage);
+resultQuitButton.addEventListener("click", reloadPage);
+
+categoryClearButton.addEventListener("click", (e) => {
+  const tags = document.querySelectorAll(".tag");
+  tags.forEach(function (tag) {
+    if (tag.classList.contains("tag_selected")) {
+      tag.classList.remove("tag_selected");
+    }
+  });
+  selectedCategories.length = 0;
+  localStorage.setItem("categories", JSON.stringify([]));
+  // handleCategories(e);
+  remainingCategories.textContent = 5 - selectedCategories.length;
+});

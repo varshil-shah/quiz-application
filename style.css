@@ -106,7 +106,7 @@ body {
 
 .info_box .develop_tag img {
   height: 25px;
-  width: 30px;
+  width: 40px;
   margin: 0 7px;
 }
 
@@ -210,20 +210,22 @@ body {
 
 .wrapper .details {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
 }
 
-.wrapper .details p {
+.wrapper p {
   font-weight: 500;
   font-size: 17px;
+  margin: 10px 0;
 }
 
-.wrapper .details p span {
+.wrapper p span {
   font-weight: 600;
   font-size: 18px;
 }
 
+.wrapper .details .clear,
 .wrapper .details .proceed {
   background-color: crimson;
   color: #fff;
@@ -491,6 +493,7 @@ footer .next_btn {
 }
 
 .wrapper .details .proceed,
+.wrapper .details .clear,
 .result_box .buttons button {
   margin: 0 10px;
   height: 40px;
