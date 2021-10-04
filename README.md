@@ -12,6 +12,8 @@ In this project I have developed a quiz application which is completely built us
 3. Highscore will be displayed corresponding to the timer.
 4. User friendly and responsive to every device.
 5. If the correct answers are greater than 5, confetti will be displayed.
+6. First time user has to selected atleast 1 category, next time when he/she tries to play quiz again, that category will be automatically selected.
+7. You can also share this quiz application on different social media platform, for example: whatsapp, gmail or telegram.
 
 ## API Reference-
 
