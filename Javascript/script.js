@@ -48,7 +48,6 @@ let counterLine, currentTime;
 let optionClicked = false;
 
 // Init
-resultContainer.classList.add("disabled");
 categoryProceedButton.disabled = categoryClearButton.disabled = true;
 categoryProceedButton.style.backgroundColor =
   categoryClearButton.style.backgroundColor = "#e1e1e1";
@@ -201,6 +200,10 @@ const handleCategories = function (e) {
       selectedCategories.push(categoryId);
     }
   }
+  localStorage.setItem(
+    "categories",
+    JSON.stringify([...new Set(selectedCategories)])
+  );
   clearProceedButton();
 };
 
@@ -221,7 +224,7 @@ const displayInfoPage = () => {
 const showResult = () => {
   resultContainer.classList.remove("disabled");
   quizContainer.style.display = "none";
-  document.querySelector("body").style.backgroundColor = "#fff";
+  document.querySelector("body").style.backgroundColor = "#e1e1e1";
   resultScore.textContent = userData.correctAnswers;
   resultMaxQuestions.textContent = userData.questionLimit;
   if (userData.correctAnswers >= 5) {
@@ -371,6 +374,6 @@ categoryClearButton.addEventListener("click", (e) => {
   });
   selectedCategories.length = 0;
   localStorage.setItem("categories", JSON.stringify([]));
-  // handleCategories(e);
+  handleCategories(e);
   remainingCategories.textContent = 5 - selectedCategories.length;
 });

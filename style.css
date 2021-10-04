@@ -8,7 +8,7 @@
 }
 
 body {
-  background: crimson;
+  background: rgb(224, 48, 83);
 }
 
 .start_btn,
@@ -30,7 +30,7 @@ body {
   font-size: 25px;
   font-weight: 500;
   background-color: #fff;
-  color: crimson;
+  color: rgb(224, 48, 83);
   padding: 15px 30px;
   outline: none;
   border: none;
@@ -70,7 +70,7 @@ body {
 
 .info_box .info_list .info span {
   font-weight: 600;
-  color: crimson;
+  color: rgb(224, 48, 83);
 }
 
 .info_box .buttons {
@@ -106,31 +106,31 @@ body {
 
 .info_box .develop_tag img {
   height: 25px;
-  width: 40px;
+  width: 35px;
   margin: 0 7px;
 }
 
 .buttons button.quit {
-  border-color: crimson;
-  color: crimson;
+  border-color: rgb(224, 48, 83);
+  color: rgb(224, 48, 83);
   background-color: transparent;
 }
 
 .buttons button.quit:hover {
-  border-color: crimson;
+  border-color: rgb(224, 48, 83);
   color: #fff;
-  background-color: crimson;
+  background-color: rgb(224, 48, 83);
 }
 
 .buttons button.restart {
-  border-color: crimson;
+  border-color: rgb(224, 48, 83);
   color: #fff;
-  background-color: crimson;
+  background-color: rgb(224, 48, 83);
 }
 
 .buttons button.restart:hover {
-  border-color: crimson;
-  color: crimson;
+  border-color: rgb(224, 48, 83);
+  color: rgb(224, 48, 83);
   background-color: transparent;
 }
 
@@ -193,7 +193,7 @@ body {
 }
 
 .content .tag_container::-webkit-scrollbar-thumb {
-  background-color: crimson;
+  background-color: rgb(224, 48, 83);
   border-radius: 50px;
 }
 
@@ -227,12 +227,12 @@ body {
 
 .wrapper .details .clear,
 .wrapper .details .proceed {
-  background-color: crimson;
+  background-color: rgb(224, 48, 83);
   color: #fff;
 }
 
 ul .tag.tag_selected {
-  background: crimson;
+  background: rgb(224, 48, 83);
   color: #fff;
 }
 
@@ -290,7 +290,7 @@ ul .tag.tag_selected {
   position: absolute;
   bottom: 0;
   left: 0;
-  background: crimson;
+  background: rgb(224, 48, 83);
   height: 3px;
 }
 
@@ -432,7 +432,7 @@ footer .next_btn {
   font-weight: 500;
   font-size: 18px;
   border: none;
-  background: crimson;
+  background: rgb(224, 48, 83);
   color: #fff;
   border-radius: 5px;
   cursor: pointer;
@@ -440,27 +440,21 @@ footer .next_btn {
 
 /* Result box */
 .result_box {
-  background: crimson;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  background: #f2f2f2;
   width: 450px;
   padding: 25px 30px;
   border-radius: 5px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
   align-items: center;
   text-align: center;
-  transform: translate(-50%, -50%) scale(1);
 }
 
 .result_box.disabled {
   display: none;
 }
-
-/* .result_box .ico {
-  font-size: 100px;
-  margin-bottom: 10px;
-  color: #fff;
-} */
 
 .result_box .trophy {
   height: 150px;
@@ -471,24 +465,29 @@ footer .next_btn {
 .result_box .complete_text {
   font-size: 20px;
   font-weight: 500;
-  color: #fff;
+  color: rgb(224, 48, 83);
 }
 
 .result_box .score_text span {
   display: flex;
+  justify-content: center;
+  align-items: center;
   margin: 10px 0;
   font-size: 18px;
   font-weight: 500;
-  color: #fff;
+  color: rgb(224, 48, 83);
 }
 
 .result_box span p {
   font-weight: 600;
   padding: 0 4px;
+  color: crimson;
 }
 
 .result_box .buttons {
   display: flex;
+  justify-content: space-around;
+  align-items: center;
   margin: 20px 0;
 }
 
@@ -506,10 +505,23 @@ footer .next_btn {
   border-radius: 5px;
 }
 
-.result_box .buttons button.restart,
-.result_box .buttons button.quit {
-  color: crimson;
-  background-color: #fff;
+.result_box .buttons button {
+  background: rgb(224, 48, 83);
+  color: #fff;
+}
+
+.result_box .social_media {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 15px 0;
+  border-top: 1px solid #e1e1e1;
+}
+
+.result_box .social_media img {
+  height: 45px;
+  width: 45px;
+  cursor: pointer;
 }
 
 /* Make the information section responsive */
