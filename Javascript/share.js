@@ -8,7 +8,7 @@ const handleClickEvent = (url) => socialWindow(url, 570, 450);
 const setShareLink = function () {
   const pageUrl = encodeURIComponent(document.URL);
   const text = `I'm playing a quiz, and I want you to take part.
-There are many categories in this quiz application, and the questions will be drawn only from those categories. A total of 15 questions will be asked, and after every 5 questions, 15 seconds will be added, as well as the difficulty level of the questions. Try`;
+There are many categories in this quiz application, and the questions will be drawn only from those categories. A total of 15 questions will be asked, and after every 5 questions, 15 seconds will be added, as well as the difficulty level of the questions will be increased. Try`;
 
   // WhatsApp-
   whatsApp.addEventListener(

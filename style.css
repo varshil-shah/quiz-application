@@ -571,6 +571,10 @@ footer .next_btn {
     height: 40px;
   }
 
+  .quiz_box section .que_text {
+    font-size: 16px;
+  }
+
   .quiz_box section .option_list .option {
     font-size: 14px;
   }
